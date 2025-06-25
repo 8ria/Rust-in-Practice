@@ -87,11 +87,5 @@ mod intermediate {
 
 fn main() {
     #[cfg(feature = "intermediate")]
-    {
-        if let Err(e) = intermediate::run() {
-            eprintln!("Error: {:?}", e);
-            std::process::exit(1);
-        }
-        return;
-    }
+    intermediate::run();
 }
