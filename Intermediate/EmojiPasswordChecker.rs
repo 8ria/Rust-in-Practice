@@ -5,7 +5,6 @@ enum EmojiCategory {
     Face,
     Object,
     Nature,
-    Symbol,
     Animal,
     Food,
     Unknown,
@@ -148,12 +147,6 @@ struct PasswordResult {
     feedback: String,
     strength_score: u32,
     categories_used: HashSet<EmojiCategory>,
-}
-
-fn validate_emoji_password(password: &str) -> (bool, String, u32) {
-    let analyzer = PasswordAnalyzer::new();
-    let result = analyzer.analyze_password(password);
-    (result.is_valid, result.feedback, result.strength_score)
 }
 
 fn main() {
