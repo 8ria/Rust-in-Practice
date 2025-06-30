@@ -19,7 +19,6 @@ enum EmojiCategory {
     Face,
     Object, 
     Nature,
-    Symbol,
     Animal,
     Food,
     Unknown,
@@ -194,7 +193,13 @@ where
             + pattern_score_data.sequence_bonus)
             .saturating_sub(pattern_score_data.repetition_penalty);
 
-        let complexity_score = 0;  
+        let complexity_score = emojis.iter()
+            .map(|&emoji| {
+                let category = self.classifier.classify(emoji);
+                self.classifier.get_complexity_weight(&category)
+            })
+            .sum::<u32>()
+            .min(20);
 
         DetailedAnalysis {
             length_score,
@@ -226,6 +231,7 @@ where
         println!("   Uniqueness Score: {}/50", analysis.uniqueness_score);
         println!("   Category Diversity: {}/50", analysis.category_diversity_score);
         println!("   Pattern Score: {}", analysis.pattern_score);
+        println!("   Complexity Score: {}/20", analysis.complexity_score);
         println!("   Categories: {:?}", analysis.categories_used);
         println!("   Pattern Details:");
         println!("     - Alternating Bonus: {}", analysis.pattern_details.alternating_bonus);
@@ -247,7 +253,8 @@ where
 
         let total_score = (analysis.length_score 
             + analysis.uniqueness_score 
-            + analysis.category_diversity_score).min(100);  
+            + analysis.category_diversity_score 
+            + analysis.complexity_score).min(100);
 
         let is_valid = emojis.len() >= self.min_length 
             && unique_emojis.len() >= self.min_unique 
@@ -262,15 +269,6 @@ where
             detailed_analysis: analysis,
         }
     }
-}
-
-fn validate_emoji_password(password: &str) -> (bool, String, u32) {
-    let classifier = AdvancedEmojiClassifier::new();
-    let pattern_analyzer = AdvancedPatternAnalyzer;
-    let validator = ProEmojiPasswordValidator::new(classifier, pattern_analyzer);
-
-    let result = validator.validate(password);
-    (result.is_valid, result.feedback, result.strength_score)
 }
 
 fn main() {
